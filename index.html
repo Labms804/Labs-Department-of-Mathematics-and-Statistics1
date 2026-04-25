@@ -230,6 +230,81 @@ main{max-width:1300px;margin:22px auto;padding:0 18px}
     <div class="hdr-right">
       <div class="cbadge offline" id="cbadge"><div class="cdot"></div><span id="ctext">محلي</span></div>
       <button class="btn-w" onclick="loadData()">🔄 تحديث</button>
+      // PRINT REPORT
+function openPrintModal(){
+  document.getElementById('printLabList').innerHTML = labs.map(l=>`
+    <label class="pchk on">
+      <input type="checkbox" value="${l.id}" checked>
+      معمل ${esc(l.num)} — ${esc(l.name)}
+    </label>`).join('');
+  openM('printModal');
+}
+
+function doPrint(){
+  const selected=[...document.querySelectorAll('#printLabList input:checked')].map(c=>c.value);
+  if(!selected.length){showToast('❗ اختر معملاً واحداً على الأقل','#c0392b');return;}
+  const inclGeneral=document.getElementById('prGeneral').checked;
+  const inclDevices=document.getElementById('prDevices').checked;
+  const inclProgs=document.getElementById('prProgs').checked;
+  const inclStats=document.getElementById('prStats').checked;
+  const selLabs=labs.filter(l=>selected.includes(l.id));
+  const today=new Date().toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'});
+  const allDevs=selLabs.flatMap(l=>l.devices||[]);
+  const totalOk=allDevs.filter(d=>d.status==='ok').length;
+  const totalWarn=allDevs.filter(d=>d.status==='warn').length;
+  const totalBad=allDevs.filter(d=>d.status==='bad').length;
+  const SLp={ok:'يعمل',warn:'مشكلة',bad:'معطل',none:'غير موجود'};
+  const sip=s=>s==='ok'?'✅':s==='warn'?'⚠️':s==='bad'?'❌':'—';
+  let html=`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>تقرير معامل</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;color:#1a2a3a;font-size:13px}.page{max-width:900px;margin:auto;padding:28px}.rep-header{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #0d2137;padding-bottom:14px;margin-bottom:18px}.rep-logo-area{display:flex;align-items:center;gap:12px}.rep-logo{width:56px;height:56px;background:#0d2137;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:26px;color:white}.rep-uni h1{font-size:15px;font-weight:900;color:#0d2137}.rep-uni p{font-size:11px;color:#6b7f95;margin-top:2px}.rep-date{text-align:left;color:#6b7f95;font-size:11px}.rep-date strong{display:block;font-size:13px;color:#0d2137;margin-bottom:2px}.rep-title{background:linear-gradient(135deg,#0d2137,#1560a8);color:white;padding:12px 18px;border-radius:9px;margin-bottom:18px;text-align:center}.rep-title h2{font-size:17px;font-weight:900}.rep-title p{font-size:11px;color:#a0c4e8;margin-top:3px}.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:22px}.stat-box{border:2px solid #d0dce8;border-radius:9px;padding:11px;text-align:center}.stat-box .n{font-size:26px;font-weight:900;color:#0d2137;line-height:1}.stat-box .l{font-size:11px;color:#6b7f95;margin-top:3px}.stat-box.ok{border-color:#b3dfc8;background:#f0faf5}.stat-box.ok .n{color:#1a7a4a}.stat-box.warn{border-color:#f0d88a;background:#fffbee}.stat-box.warn .n{color:#b07d00}.stat-box.bad{border-color:#f5c0bc;background:#fff5f5}.stat-box.bad .n{color:#c0392b}.lab-section{margin-bottom:26px;page-break-inside:avoid}.lab-title{background:#0d2137;color:white;padding:9px 15px;border-radius:7px 7px 0 0;display:flex;align-items:center;justify-content:space-between}.lab-title h3{font-size:14px;font-weight:900}.lab-title span{font-size:11px;color:#a0c4e8}.gen-table{width:100%;border-collapse:collapse;margin-bottom:12px}.gen-table td{padding:7px 11px;border:1px solid #d0dce8;font-size:12px}.gen-table td:first-child{background:#f3f6fb;font-weight:700;width:35%;color:#0d2137}.dev-table{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:11px}.dev-table th{background:#0d2137;color:white;padding:6px 7px;text-align:right;font-weight:700}.dev-table td{padding:5px 7px;border:1px solid #d0dce8}.dev-table tr:nth-child(even) td{background:#f8fbff}.dev-table tr.warn-row td{background:#fff8f0}.dev-table tr.bad-row td{background:#fff5f5}.badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700}.b-ok{background:#e3f5ec;color:#1a7a4a}.b-warn{background:#fff4e0;color:#b07d00}.b-bad{background:#fde8e8;color:#c0392b}.prog-ok{color:#1a7a4a;font-weight:700}.prog-no{color:#ccc}.notes-box{background:#fffbee;border:1px solid #f0dfa0;border-radius:5px;padding:8px 12px;font-size:11px;color:#7a5800;margin-bottom:10px}.rep-footer{border-top:2px solid #d0dce8;padding-top:10px;margin-top:22px;display:flex;justify-content:space-between;font-size:11px;color:#6b7f95}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="page"><div class="rep-header"><div class="rep-logo-area"><div class="rep-logo">🔬</div><div class="rep-uni"><h1>جامعة جدة — كلية العلوم</h1><p>قسم الرياضيات والإحصاء</p></div></div><div class="rep-date"><strong>تاريخ التقرير</strong>${today}</div></div><div class="rep-title"><h2>تقرير معامل قسم الرياضيات والإحصاء</h2><p>يشمل ${selLabs.length} معمل — إجمالي ${allDevs.length} جهاز</p></div>`;
+  if(inclStats){html+=`<div class="stats-grid"><div class="stat-box"><div class="n">${selLabs.length}</div><div class="l">عدد المعامل</div></div><div class="stat-box ok"><div class="n">${totalOk}</div><div class="l">جهاز يعمل ✅</div></div><div class="stat-box warn"><div class="n">${totalWarn}</div><div class="l">جهاز مشكلة ⚠️</div></div><div class="stat-box bad"><div class="n">${totalBad}</div><div class="l">جهاز معطل ❌</div></div></div>`;}
+  selLabs.forEach(lab=>{
+    const devs=lab.devices||[];
+    const ok=devs.filter(d=>d.status==='ok').length;
+    const issues=devs.filter(d=>d.status!=='ok').length;
+    html+=`<div class="lab-section"><div class="lab-title"><h3>🔬 معمل ${lab.num} — ${lab.name||'معمل '+lab.num}</h3><span>${devs.length} جهاز | ${ok} يعمل | ${issues} مشكلة</span></div>`;
+    if(inclGeneral){html+=`<table class="gen-table"><tr><td>المسؤول</td><td>${lab.supervisor||'—'}</td></tr><tr><td>الموقع</td><td>${lab.location||'—'}</td></tr><tr><td>عدد المقاعد</td><td>${lab.seats||'—'}</td></tr><tr><td>البروجكتر</td><td>${sip(lab.projector)} ${SLp[lab.projector]||'—'}${lab.projectorNote?' — '+lab.projectorNote:''}</td></tr><tr><td>الطابعة</td><td>${sip(lab.printer)} ${SLp[lab.printer]||'—'}${lab.printerNote?' — '+lab.printerNote:''}</td></tr><tr><td>الإنترنت</td><td>${sip(lab.network)} ${SLp[lab.network]||'—'}</td></tr></table>`;}
+    if(lab.notes)html+=`<div class="notes-box">💡 ${lab.notes}</div>`;
+    if(inclDevices){
+      const ALL_PROGS_P=['SPSS','R','R Studio','PSPP','MegaStat','Excel','Mathematica','Maple','Matlab'];
+      const progCols=inclProgs?ALL_PROGS_P.map(p=>`<th>${p}</th>`).join(''):'';
+      html+=`<table class="dev-table"><tr><th>#</th><th>الجهاز</th><th>الحالة</th>${progCols}<th>ملاحظة</th></tr>`;
+      devs.forEach((d,i)=>{
+        const rc=d.status==='bad'?'bad-row':d.status==='warn'?'warn-row':'';
+        const sb=d.status==='ok'?'<span class="badge b-ok">✅ يعمل</span>':d.status==='warn'?'<span class="badge b-warn">⚠️ مشكلة</span>':'<span class="badge b-bad">❌ معطل</span>';
+        const pc=inclProgs?ALL_PROGS_P.map(p=>`<td style="text-align:center">${d.progs&&d.progs[p]?'<span class="prog-ok">✓</span>':'<span class="prog-no">—</span>'}</td>`).join(''):'';
+        html+=`<tr class="${rc}"><td>${i+1}</td><td>${d.name}</td><td>${sb}</td>${pc}<td>${d.note||''}</td></tr>`;
+      });
+      html+=`</table>`;}
+    html+=`</div>`;
+  });
+  html+=`<div class="rep-footer"><span>جامعة جدة — قسم الرياضيات والإحصاء</span><span>تاريخ الإصدار: ${today}</span></div></div><script>window.onload=()=>window.print();<\/script>
+  <div class="moverlay" id="printModal">
+<div class="modal modal-sm">
+  <div class="mhead"><h2>🖨️ طباعة التقرير</h2><button class="mclose" onclick="closeM('printModal')">✕</button></div>
+  <div class="mbody">
+    <div class="fsec">📋 اختر المعامل</div>
+    <div id="printLabList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:4px"></div>
+    <div class="fsec" style="margin-top:16px">📄 محتوى التقرير</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <label class="pchk on"><input type="checkbox" id="prStats" checked> الملخص الإحصائي</label>
+      <label class="pchk on"><input type="checkbox" id="prGeneral" checked> المعلومات العامة (بروجكتر، طابعة، دخول)</label>
+      <label class="pchk on"><input type="checkbox" id="prDevices" checked> قائمة الأجهزة مع حالتها</label>
+      <label class="pchk on"><input type="checkbox" id="prProgs" checked> البرامج المثبتة على كل جهاز</label>
+    </div>
+  </div>
+  <div class="mfooter">
+    <button class="btn-cancel" onclick="closeM('printModal')">إلغاء</button>
+    <button class="btn-save" onclick="doPrint()">🖨️ طباعة</button>
+  </div>
+</div>
+</div>
+  </body></html>`;
+  const win=window.open('','_blank');
+  win.document.write(html);
+  win.document.close();
+  closeM('printModal');
+}
+      <button class="btn-w" onclick="openPrintModal()">🖨️ طباعة تقرير</button>
       <div id="authArea"></div><!-- يتغير حسب حالة الدخول -->
     </div>
   </div>
