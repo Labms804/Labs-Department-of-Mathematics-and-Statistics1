@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>معامل قسم الرياضيات والإحصاء — جامعة جدة</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<script>
+  const SUPABASE_URL = "https://vjgmqlkzbnflzyfymuwn.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqZ21xbGt6Ym5mbHp5ZnltdXduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMDY3MzksImV4cCI6MjA5MjY4MjczOX0.dkQ-YC6myrCRL1xObUKKogfkvFUKAfxcQYsC-s4zgZQ";
+  const ADMIN_PASS   = "admin123";
+</script>
+<style>
+:root{
+  --primary:#0d2137;--accent:#1560a8;--gold:#c8973a;
+  --green:#1a7a4a;--red:#c0392b;--warn:#b07d00;
+  --light:#e8f1fb;--gray:#f3f6fb;--text:#1a2a3a;
+  --muted:#6b7f95;--border:#d0dce8;
+  --shadow:0 4px 28px rgba(13,33,55,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Cairo',sans-serif;background:var(--gray);color:var(--text);min-height:100vh}
+header{background:linear-gradient(135deg,#0d2137,#0f3060 55%,#1560a8);color:white;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(13,33,55,.3)}
+.hdr{max-width:1300px;margin:auto;padding:13px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hdr-logo{display:flex;align-items:center;gap:13px}
+.hdr-icon{width:50px;height:50px;background:var(--gold);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:25px;flex-shrink:0}
+.hdr-title h1{font-size:17px;font-weight:900}
+.hdr-title p{font-size:11px;color:#a0c4e8;margin-top:2px}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cbadge{padding:5px 11px;border-radius:20px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:5px}
+.cbadge.online{background:rgba(26,122,74,.25);color:#6de0a0}
+.cbadge.offline{background:rgba(255,255,255,.12);color:#ccc}
+.cbadge.loading{background:rgba(255,255,255,.12);color:#ccc}
+.cdot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.cdot.p{animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.btn-w{background:rgba(255,255,255,.13);border:none;color:white;padding:8px 13px;border-radius:8px;font-family:'Cairo',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:5px}
+.btn-w:hover{background:rgba(255,255,255,.22)}
+.btn-gold{background:var(--gold);color:var(--primary);border:none;padding:9px 17px;border-radius:9px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px}
+.btn-gold:hover{background:#daa94a;transform:translateY(-1px)}
+.admin-badge{background:rgba(200,151,58,.25);color:var(--gold);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:5px;border:1px solid rgba(200,151,58,.3)}
+.viewer-badge{background:rgba(255,255,255,.10);color:#ccc;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:5px}
+
+/* LOGIN */
+#loginScreen{display:none;position:fixed;inset:0;background:rgba(13,33,55,.7);backdrop-filter:blur(6px);z-index:500;align-items:center;justify-content:center}
+#loginScreen.open{display:flex}
+.login-box{background:white;border-radius:20px;padding:32px;width:90%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(13,33,55,.35);animation:mIn .25s both}
+.login-box h2{font-size:18px;font-weight:900;color:var(--primary);margin-bottom:6px}
+.login-box p{font-size:13px;color:var(--muted);margin-bottom:22px}
+.login-icon{font-size:48px;margin-bottom:14px}
+.login-input{width:100%;padding:12px 15px;border-radius:11px;border:2px solid var(--border);outline:none;font-family:'Cairo',sans-serif;font-size:16px;text-align:center;letter-spacing:4px;transition:border .2s;margin-bottom:12px}
+.login-input:focus{border-color:var(--accent)}
+.login-input.error{border-color:var(--red);animation:shake .3s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.login-err{color:var(--red);font-size:12px;font-weight:600;margin-bottom:12px;min-height:18px}
+.login-btn{width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:11px;font-family:'Cairo',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s;margin-bottom:10px}
+.login-btn:hover{background:var(--accent)}
+.login-cancel{background:none;border:none;font-family:'Cairo',sans-serif;font-size:13px;color:var(--muted);cursor:pointer;padding:6px}
+
+.uni-bar{background:white;border-bottom:3px solid var(--gold);padding:9px 22px}
+.uni-inner{max-width:1300px;margin:auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.uni-name{font-size:13px;font-weight:700;color:var(--primary)}
+.uni-sub{font-size:12px;color:var(--muted)}
+.year-tag{background:var(--light);color:var(--accent);padding:3px 12px;border-radius:20px;font-size:12px;font-weight:700}
+
+.stats-bar{background:white;border-bottom:1px solid var(--border);padding:11px 22px}
+.stats-inner{max-width:1300px;margin:auto;display:flex;gap:22px;flex-wrap:wrap}
+.sitem{display:flex;align-items:center;gap:9px}
+.sicon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sb{background:#e3eefa}.sg{background:#fdf3e0}.sv{background:#e3f5ec}.sr{background:#fde8e8}.sp{background:#f0eafa}
+.snum{font-size:21px;font-weight:900;color:var(--primary);line-height:1}
+.slbl{font-size:11px;color:var(--muted)}
+
+main{max-width:1300px;margin:22px auto;padding:0 18px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{padding:7px 16px;border-radius:9px;border:1.5px solid var(--border);background:white;font-family:'Cairo',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--muted)}
+.tab.active{background:var(--primary);color:white;border-color:var(--primary)}
+.tab:hover:not(.active){background:var(--light);color:var(--accent);border-color:var(--accent)}
+.sbox{display:flex;align-items:center;background:white;border:1.5px solid var(--border);border-radius:9px;overflow:hidden;min-width:200px}
+.sbox input{border:none;outline:none;padding:8px 12px;font-family:'Cairo',sans-serif;font-size:13px;flex:1;background:transparent;text-align:right}
+.sbox span{padding:0 10px;color:var(--muted)}
+
+/* LAB CARD */
+.lab-card{background:white;border-radius:18px;box-shadow:var(--shadow);overflow:hidden;border:1.5px solid var(--border);margin-bottom:24px;animation:fadeUp .35s both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.lc-head{background:linear-gradient(135deg,var(--primary),#1a4a7a);color:white;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.lc-title{display:flex;align-items:center;gap:11px}
+.lc-num{background:var(--gold);color:var(--primary);width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;flex-shrink:0}
+.lc-name{font-size:16px;font-weight:900}
+.lc-sub{font-size:11px;color:#a0c4e8;margin-top:2px}
+.lc-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.lc-stats{display:flex;gap:9px;flex-wrap:wrap}
+.lcs{background:rgba(255,255,255,.13);border-radius:9px;padding:6px 13px;text-align:center}
+.lcs-n{font-size:19px;font-weight:900;line-height:1}
+.lcs-l{font-size:10px;color:#a0d4f8;margin-top:2px}
+.lc-actions{display:flex;gap:6px}
+.lc-btn{background:rgba(255,255,255,.15);border:none;color:white;padding:6px 12px;border-radius:7px;font-family:'Cairo',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;transition:background .15s}
+.lc-btn:hover{background:rgba(255,255,255,.28)}
+.lc-btn.del{background:rgba(192,57,43,.35)}.lc-btn.del:hover{background:rgba(192,57,43,.6)}
+
+/* GENERAL INFO */
+.gen-info{padding:14px 20px;background:#f8fbff;border-bottom:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.gi-item{background:white;border-radius:10px;padding:10px 14px;border:1.5px solid var(--border);display:flex;align-items:center;gap:10px;transition:all .15s}
+.gi-item.editable{cursor:pointer}
+.gi-item.editable:hover{border-color:var(--accent);background:var(--light)}
+.gi-icon{font-size:22px;flex-shrink:0}
+.gi-label{font-size:11px;color:var(--muted);font-weight:600}
+.gi-value{font-size:13px;font-weight:700;color:var(--primary);margin-top:2px}
+.gi-value.ok{color:var(--green)}.gi-value.warn{color:var(--warn)}.gi-value.bad{color:var(--red)}
+.gi-hint{font-size:10px;color:var(--accent);margin-top:2px}
+
+/* ADMIN BAR */
+.admin-info-bar{background:linear-gradient(90deg,#0d2137,#1a4a7a);color:white;padding:7px 20px;display:flex;align-items:center;gap:8px;font-size:12px}
+.aib-chip{background:rgba(200,151,58,.25);color:var(--gold);padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700;border:1px solid rgba(200,151,58,.3)}
+
+/* DEVICES */
+.dev-section{padding:16px 20px}
+.dev-sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.dev-sec-title{font-size:14px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:7px}
+.dev-controls{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.fbtn{padding:5px 11px;border-radius:7px;border:1.5px solid var(--border);font-family:'Cairo',sans-serif;font-size:12px;font-weight:600;cursor:pointer;background:white;color:var(--muted);transition:all .15s}
+.fbtn.active{background:var(--primary);color:white;border-color:var(--primary)}
+.btn-add-dev{background:#e3f5ec;color:var(--green);border:1.5px solid #b3dfc8;padding:5px 12px;border-radius:7px;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-add-dev:hover{background:var(--green);color:white}
+
+.dev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:9px}
+.dev-card{background:var(--gray);border-radius:11px;padding:11px 14px;border:1.5px solid var(--border);transition:all .15s}
+.dev-card.editable{cursor:pointer}
+.dev-card.editable:hover{background:var(--light);border-color:var(--accent);transform:translateY(-1px);box-shadow:0 3px 12px rgba(21,96,168,.12)}
+.dev-card.issue{border-color:#f0b8b0;background:#fff8f7}
+.dev-card.broken{border-color:#e08080;background:#fff0f0;opacity:.85}
+.dc-top{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.dc-num{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;color:white}
+.dc-num.ok{background:var(--primary)}.dc-num.warn{background:var(--warn)}.dc-num.bad{background:var(--red)}
+.dc-name{font-size:13px;font-weight:700;flex:1}
+.dc-status{font-size:10px;padding:2px 7px;border-radius:5px;font-weight:700;white-space:nowrap}
+.ds-ok{background:#e3f5ec;color:var(--green)}.ds-warn{background:#fff4e0;color:var(--warn)}.ds-bad{background:#fde8e8;color:var(--red)}
+.dc-progs{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:5px}
+.dp{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700}
+.dp-ok{background:#e3f5ec;color:var(--green)}.dp-no{background:#f0f0f0;color:#bbb}
+.dc-note{font-size:11px;color:var(--red);font-weight:600;display:flex;align-items:center;gap:3px}
+.dc-hint{font-size:10px;color:var(--accent);margin-top:4px}
+.lab-notes{background:#fffbee;border-top:1px solid #f0dfa0;padding:10px 20px}
+.lab-notes p{font-size:12px;color:#7a5800;line-height:1.6}
+
+/* MODALS */
+.moverlay{display:none;position:fixed;inset:0;background:rgba(13,33,55,.5);backdrop-filter:blur(4px);z-index:200;align-items:flex-start;justify-content:center;padding:20px 10px;overflow-y:auto}
+.moverlay.open{display:flex}
+.modal{background:white;border-radius:20px;width:95%;max-width:640px;box-shadow:0 20px 60px rgba(13,33,55,.3);animation:mIn .22s both;margin:auto}
+.modal-sm{max-width:480px}
+@keyframes mIn{from{opacity:0;transform:scale(.95) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.mhead{background:linear-gradient(135deg,var(--primary),#1a4a7a);color:white;padding:16px 20px;border-radius:20px 20px 0 0;display:flex;align-items:center;justify-content:space-between}
+.mhead h2{font-size:15px;font-weight:700}
+.mclose{background:rgba(255,255,255,.15);border:none;color:white;width:29px;height:29px;border-radius:7px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.mclose:hover{background:rgba(255,255,255,.3)}
+.mbody{padding:20px}
+.mfooter{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;border-radius:0 0 20px 20px}
+.fg{margin-bottom:13px}
+.fl{display:block;font-size:12px;font-weight:700;color:var(--primary);margin-bottom:4px}
+.fi{width:100%;padding:8px 11px;border-radius:9px;border:1.5px solid var(--border);outline:none;font-family:'Cairo',sans-serif;font-size:13px;transition:border .15s;text-align:right}
+.fi:focus{border-color:var(--accent)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fsec{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.4px;margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:6px;margin-bottom:4px}
+.pchk{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;font-size:12px;font-weight:600;transition:all .15s;user-select:none}
+.pchk input{width:14px;height:14px;accent-color:var(--accent);flex-shrink:0}
+.pchk:hover{background:var(--light);border-color:var(--accent)}
+.pchk.on{background:#eaf2ff;border-color:var(--accent);color:var(--accent)}
+.sradio{display:flex;gap:8px;flex-wrap:wrap}
+.srad{display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;font-size:12px;font-weight:600;transition:all .15s;user-select:none}
+.srad input{width:14px;height:14px;accent-color:var(--accent)}
+.srad:has(input:checked){border-color:var(--accent);background:var(--light)}
+.btn-save{background:var(--accent);color:white;border:none;padding:9px 22px;border-radius:9px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px}
+.btn-save:hover{background:var(--primary)}.btn-save:disabled{opacity:.6;cursor:not-allowed}
+.btn-cancel{background:var(--gray);color:var(--muted);border:none;padding:9px 18px;border-radius:9px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+
+.empty{text-align:center;padding:50px 20px;color:var(--muted);display:none}
+.empty-ico{font-size:52px;margin-bottom:10px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--primary);color:white;padding:10px 20px;border-radius:11px;font-size:13px;font-weight:600;box-shadow:0 5px 18px rgba(13,33,55,.3);transition:transform .3s;z-index:9999}
+#toast.show{transform:translateX(-50%) translateY(0)}
+.sbar{height:3px;background:var(--accent);width:0;transition:width .3s;position:fixed;top:0;left:0;z-index:9999}
+.sbar.go{width:70%}.sbar.done{width:100%;transition:width .1s}
+
+@media(max-width:680px){
+  .dev-grid{grid-template-columns:1fr}
+  .frow{grid-template-columns:1fr}
+  .gen-info{grid-template-columns:1fr 1fr}
+  .sbox{width:100%}
+  .toolbar{flex-direction:column;align-items:stretch}
+}
+</style>
+</head>
+<body>
+<div class="sbar" id="sbar"></div>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-icon">🔐</div>
+    <h2>دخول المشرف</h2>
+    <p>أدخل كلمة مرور المشرف للحصول على صلاحية التعديل</p>
+    <input class="login-input" type="password" id="passInput" placeholder="••••••••" maxlength="20" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="login-err" id="loginErr"></div>
+    <button class="login-btn" onclick="doLogin()">🔓 دخول</button>
+    <button class="login-cancel" onclick="closeLogin()">إلغاء</button>
+  </div>
+</div>
+
+<header>
+  <div class="hdr">
+    <div class="hdr-logo">
+      <div class="hdr-icon">🔬</div>
+      <div class="hdr-title">
+        <h1>معامل قسم الرياضيات والإحصاء</h1>
+        <p>جامعة جدة — كلية العلوم</p>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="cbadge offline" id="cbadge"><div class="cdot"></div><span id="ctext">محلي</span></div>
+      <button class="btn-w" onclick="loadData()">🔄 تحديث</button>
+      <button class="btn-w" onclick="openPrintModal()">🖨️ طباعة تقرير</button>
+      <div id="authArea"></div>
+    </div>
+  </div>
+</header>
+
+<div class="uni-bar">
+  <div class="uni-inner">
+    <div><div class="uni-name">🏛️ جامعة جدة — كلية العلوم</div><div class="uni-sub">قسم الرياضيات والإحصاء</div></div>
+    <div class="year-tag">تقرير المعامل 2026</div>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="sitem"><div class="sicon sb">🏛️</div><div><div class="snum" id="st0">0</div><div class="slbl">معامل</div></div></div>
+    <div class="sitem"><div class="sicon sg">💻</div><div><div class="snum" id="st1">0</div><div class="slbl">إجمالي الأجهزة</div></div></div>
+    <div class="sitem"><div class="sicon sv">✅</div><div><div class="snum" id="st2">0</div><div class="slbl">تعمل بكفاءة</div></div></div>
+    <div class="sitem"><div class="sicon sr">⚠️</div><div><div class="snum" id="st3">0</div><div class="slbl">تحتاج متابعة</div></div></div>
+    <div class="sitem"><div class="sicon sp">🖨️</div><div><div class="snum" id="st4">0</div><div class="slbl">طابعة تعمل</div></div></div>
+    <div class="sitem"><div class="sicon sb">📽️</div><div><div class="snum" id="st5">0</div><div class="slbl">بروجكتر يعمل</div></div></div>
+  </div>
+</div>
+
+<main>
+  <div class="toolbar">
+    <div class="tabs" id="labTabs"></div>
+    <div class="sbox"><input type="text" id="q" placeholder="بحث..." oninput="renderAll()"><span>🔍</span></div>
+  </div>
+  <div id="labsOut"></div>
+  <div class="empty" id="emp"><div class="empty-ico">🔬</div><h3>لا توجد نتائج</h3></div>
+</main>
+
+<!-- LAB MODAL -->
+<div class="moverlay" id="labModal">
+<div class="modal">
+  <div class="mhead"><h2 id="labMTitle">إضافة معمل</h2><button class="mclose" onclick="closeM('labModal')">✕</button></div>
+  <div class="mbody">
+    <input type="hidden" id="eLabId">
+    <div class="fsec">📋 معلومات أساسية</div>
+    <div class="frow">
+      <div class="fg"><label class="fl">رقم المعمل *</label><input class="fi" id="lNum" placeholder="مثال: 207"></div>
+      <div class="fg"><label class="fl">اسم المعمل</label><input class="fi" id="lName" placeholder="معمل الحاسب"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="fl">المسؤول</label><input class="fi" id="lSuper" placeholder="اسم المسؤول"></div>
+      <div class="fg"><label class="fl">الموقع / الغرفة</label><input class="fi" id="lLoc" placeholder="مبنى A - الطابق 2"></div>
+    </div>
+    <div class="fsec">🔑 معلومات الدخول والتجهيزات</div>
+    <div class="frow">
+      <div class="fg"><label class="fl">🔐 رقم دخول المعمل</label><input class="fi" id="lPass" placeholder="مثال: 1234"></div>
+      <div class="fg"><label class="fl">🖥️ كلمة دخول الأجهزة</label><input class="fi" id="lDevPass" placeholder="مثال: 123456"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="fl">📽️ حالة البروجكتر</label>
+        <select class="fi" id="lProj"><option value="ok">✅ يعمل</option><option value="warn">⚠️ مشكلة</option><option value="bad">❌ معطل</option><option value="none">— غير موجود</option></select>
+      </div>
+      <div class="fg"><label class="fl">📽️ ملاحظة البروجكتر</label><input class="fi" id="lProjNote" placeholder="اختياري"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="fl">🖨️ حالة الطابعة</label>
+        <select class="fi" id="lPrint"><option value="ok">✅ تعمل</option><option value="warn">⚠️ مشكلة</option><option value="bad">❌ معطلة</option><option value="none">— غير موجودة</option></select>
+      </div>
+      <div class="fg"><label class="fl">🖨️ ملاحظة الطابعة</label><input class="fi" id="lPrintNote" placeholder="اختياري"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="fl">📶 الإنترنت / الشبكة</label>
+        <select class="fi" id="lNet"><option value="ok">✅ يعمل</option><option value="warn">⚠️ أحياناً</option><option value="bad">❌ لا يعمل</option><option value="none">— غير متوفر</option></select>
+      </div>
+      <div class="fg"><label class="fl">🪑 عدد المقاعد</label><input class="fi" id="lSeats" type="number" min="0" placeholder="30"></div>
+    </div>
+    <div class="fsec">📝 ملاحظات عامة</div>
+    <div class="fg"><textarea class="fi" id="lNotes" rows="2" placeholder="ملاحظات عامة على المعمل..."></textarea></div>
+  </div>
+  <div class="mfooter">
+    <button class="btn-cancel" onclick="closeM('labModal')">إلغاء</button>
+    <button class="btn-save" id="saveLabBtn" onclick="saveLab()">💾 حفظ المعمل</button>
+  </div>
+</div>
+</div>
+
+<!-- DEVICE EDIT MODAL -->
+<div class="moverlay" id="devModal">
+<div class="modal">
+  <div class="mhead"><h2 id="devMTitle">تعديل الجهاز</h2><button class="mclose" onclick="closeM('devModal')">✕</button></div>
+  <div class="mbody">
+    <input type="hidden" id="eDevLabId">
+    <input type="hidden" id="eDevIdx">
+    <div class="fsec">🖥️ معلومات الجهاز</div>
+    <div class="frow">
+      <div class="fg"><label class="fl">اسم / رقم الجهاز</label><input class="fi" id="dName" placeholder="جهاز 1"></div>
+      <div class="fg"><label class="fl">رقم الأصل / Serial</label><input class="fi" id="dSerial" placeholder="اختياري"></div>
+    </div>
+    <div class="fg"><label class="fl">⚡ الحالة</label>
+      <div class="sradio">
+        <label class="srad"><input type="radio" name="dstatus" value="ok" checked> ✅ يعمل بكفاءة</label>
+        <label class="srad"><input type="radio" name="dstatus" value="warn"> ⚠️ يعمل مع مشكلة</label>
+        <label class="srad"><input type="radio" name="dstatus" value="bad"> ❌ معطل</label>
+      </div>
+    </div>
+    <div class="fsec">💿 البرامج المثبتة على هذا الجهاز</div>
+    <div class="pgrid" id="devProgGrid"></div>
+    <div class="fg" style="margin-top:10px"><label class="fl">📝 ملاحظة على الجهاز</label><input class="fi" id="dNote" placeholder="مثال: الشاشة معطلة..."></div>
+  </div>
+  <div class="mfooter">
+    <button class="btn-cancel" onclick="closeM('devModal')">إلغاء</button>
+    <button class="btn-save" onclick="saveDevice()">💾 حفظ الجهاز</button>
+  </div>
+</div>
+</div>
+
+<!-- ADD DEVICE MODAL -->
+<div class="moverlay" id="addDevModal">
+<div class="modal modal-sm">
+  <div class="mhead"><h2 id="addDevTitle">إضافة جهاز</h2><button class="mclose" onclick="closeM('addDevModal')">✕</button></div>
+  <div class="mbody">
+    <input type="hidden" id="addDevLabId">
+    <div class="frow">
+      <div class="fg"><label class="fl">اسم / رقم الجهاز *</label><input class="fi" id="ndName" placeholder="جهاز 31"></div>
+      <div class="fg"><label class="fl">رقم الأصل / Serial</label><input class="fi" id="ndSerial" placeholder="اختياري"></div>
+    </div>
+    <div class="fg"><label class="fl">⚡ الحالة</label>
+      <div class="sradio">
+        <label class="srad"><input type="radio" name="ndstatus" value="ok" checked> ✅ يعمل</label>
+        <label class="srad"><input type="radio" name="ndstatus" value="warn"> ⚠️ مشكلة</label>
+        <label class="srad"><input type="radio" name="ndstatus" value="bad"> ❌ معطل</label>
+      </div>
+    </div>
+    <div class="fsec">💿 البرامج المثبتة</div>
+    <div class="pgrid" id="newDevProgGrid"></div>
+    <div class="fg"><label class="fl">📝 ملاحظة</label><input class="fi" id="ndNote" placeholder="اختياري"></div>
+  </div>
+  <div class="mfooter">
+    <button class="btn-cancel" onclick="closeM('addDevModal')">إلغاء</button>
+    <button class="btn-save" onclick="saveNewDevice()">➕ إضافة الجهاز</button>
+  </div>
+</div>
+</div>
+
+<!-- PRINT MODAL -->
+<div class="moverlay" id="printModal">
+<div class="modal modal-sm">
+  <div class="mhead"><h2>🖨️ طباعة التقرير</h2><button class="mclose" onclick="closeM('printModal')">✕</button></div>
+  <div class="mbody">
+    <div class="fsec">📋 اختر المعامل</div>
+    <div id="printLabList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:4px"></div>
+    <div class="fsec" style="margin-top:16px">📄 محتوى التقرير</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <label class="pchk on"><input type="checkbox" id="prStats" checked> الملخص الإحصائي</label>
+      <label class="pchk on"><input type="checkbox" id="prGeneral" checked> المعلومات العامة (بروجكتر، طابعة، دخول)</label>
+      <label class="pchk on"><input type="checkbox" id="prDevices" checked> قائمة الأجهزة مع حالتها</label>
+      <label class="pchk on"><input type="checkbox" id="prProgs" checked> البرامج المثبتة على كل جهاز</label>
+    </div>
+  </div>
+  <div class="mfooter">
+    <button class="btn-cancel" onclick="closeM('printModal')">إلغاء</button>
+    <button class="btn-save" onclick="doPrint()">🖨️ طباعة</button>
+  </div>
+</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const ALL_PROGS = ['SPSS','R','R Studio','PSPP','MegaStat','Excel','Mathematica','Maple','Matlab'];
+const SL={ok:'يعمل',warn:'مشكلة',bad:'معطل',none:'غير موجود'};
+const SC={ok:'ds-ok',warn:'ds-warn',bad:'ds-bad'};
+const DNC={ok:'ok',warn:'warn',bad:'bad'};
+const configured = SUPABASE_URL !== "YOUR_SUPABASE_URL";
+
+// ══ AUTH ══
+let isAdmin = false;
+function doLogin(){
+  const val=document.getElementById('passInput').value;
+  const inp=document.getElementById('passInput');
+  if(val===ADMIN_PASS){
+    isAdmin=true; sessionStorage.setItem('isAdmin','1');
+    closeLogin(); updateAuthUI(); renderAll();
+    showToast('✅ مرحباً! أنت الآن في وضع المشرف');
+  } else {
+    inp.classList.add('error');
+    document.getElementById('loginErr').textContent='❌ كلمة المرور غير صحيحة';
+    setTimeout(()=>inp.classList.remove('error'),400);
+  }
+}
+function openLogin(){ document.getElementById('passInput').value=''; document.getElementById('loginErr').textContent=''; document.getElementById('loginScreen').classList.add('open'); setTimeout(()=>document.getElementById('passInput').focus(),200); }
+function closeLogin(){ document.getElementById('loginScreen').classList.remove('open'); }
+function logout(){ isAdmin=false; sessionStorage.removeItem('isAdmin'); updateAuthUI(); renderAll(); showToast('👋 تم تسجيل الخروج'); }
+function updateAuthUI(){
+  const area=document.getElementById('authArea');
+  if(isAdmin){
+    area.innerHTML=`<div class="admin-badge">👑 وضع المشرف</div><button class="btn-gold" onclick="openAddLab()">➕ إضافة معمل</button><button class="btn-w" onclick="logout()">🚪 خروج</button>`;
+  } else {
+    area.innerHTML=`<div class="viewer-badge">👁️ وضع العرض</div><button class="btn-w" onclick="openLogin()">🔐 دخول المشرف</button>`;
+  }
+}
+
+// ══ DATA BUILDERS ══
+function mkDev(name,progs,status,note,serial){
+  return {id:'d'+(Math.random()*999999|0),name,serial:serial||'',progs:{...progs},status:status||'ok',note:note||''};
+}
+const NONE={SPSS:false,R:false,'R Studio':false,PSPP:false,MegaStat:false,Excel:false,Mathematica:false,Maple:false,Matlab:false};
+const P207={SPSS:true,R:true,'R Studio':false,PSPP:true,MegaStat:false,Excel:true,Mathematica:false,Maple:false,Matlab:false};
+const P213={SPSS:true,R:true,'R Studio':true,PSPP:true,MegaStat:false,Excel:true,Mathematica:false,Maple:false,Matlab:false};
+const EXCEL_ONLY={SPSS:false,R:false,'R Studio':false,PSPP:false,MegaStat:false,Excel:true,Mathematica:false,Maple:false,Matlab:false};
+
+function b207(){
+  const iss={1:'لا يعمل',2:'لا يعمل',4:'يوجد مشكلة في الجهاز',7:'يوجد مشكلة في تسجيل الدخول للكمبيوتر',10:'يوجد مشكلة في الجهاز',13:'الكمبيوتر معلق',14:'لا يعمل',16:'لا يعمل',20:'لا يعمل',21:'لا يعمل',24:'لا يعمل'};
+  const devs=Array.from({length:24},(_,i)=>{const n=i+1;const nt=iss[n]||'';return mkDev('جهاز '+n,{...P207},nt?'warn':'ok',nt);});
+  devs.unshift(mkDev('جهاز أستاذة المادة',{...NONE},'warn','الشاشة لا تعمل'));
+  return devs;
+}
+function b212(){
+  const iss={3:'الجهاز معلق',9:'الشاشة لا تعمل',11:'الشاشة لا تعمل',14:'لا يعمل',15:'يوجد مشكلة في ذاكرة الجهاز',20:'لا يعمل',21:'الشاشة لا تعمل',23:'لا يعمل'};
+  const devs=Array.from({length:23},(_,i)=>{const n=i+1;const nt=iss[n]||'';return mkDev('جهاز '+n,{...P207},nt?'warn':'ok',nt);});
+  devs.unshift(mkDev('جهاز أستاذة المادة',{...P207},'ok',''));
+  return devs;
+}
+function b213(){
+  const devs=Array.from({length:30},(_,i)=>{
+    const n=i+1;
+    if(n===1) return mkDev('جهاز '+n,{...P213},'bad','لا يعمل');
+    if(n===26||n===27) return mkDev('جهاز '+n,{...P213,R:false,'R Studio':false,PSPP:false},'warn','R وR Studio وPSPP غير متوفرة');
+    return mkDev('جهاز '+n,{...P213},'ok','');
+  });
+  devs.push(mkDev('جهاز الأستاذ',{...P213},'ok',''));
+  return devs;
+}
+function b226(){
+  const devs=Array.from({length:30},(_,i)=>{
+    const n=i+1;
+    if(n===4) return mkDev('جهاز '+n,{...NONE,Excel:true},'warn','R وR Studio وPSPP وSPSS وMathematical غير متوفرة');
+    if(n===13) return mkDev('جهاز '+n,{...NONE},'bad','لا يعمل');
+    if(n===20) return mkDev('جهاز '+n,{...P213},'bad','لا يعمل');
+    if(n===24) return mkDev('جهاز '+n,{...NONE,Excel:true},'warn','R وR Studio وPSPP وSPSS وMathematical غير متوفرة');
+    if(n===26) return mkDev('جهاز '+n,{...NONE},'bad','لا يعمل');
+    return mkDev('جهاز '+n,{...P213},'ok','');
+  });
+  devs.push(mkDev('جهاز الأستاذ',{...P213},'ok',''));
+  return devs;
+}
+function b216(){
+  const devs=Array.from({length:30},(_,i)=>mkDev('جهاز '+(i+1),{...EXCEL_ONLY},'ok',''));
+  devs.push(mkDev('جهاز الأستاذ',{...EXCEL_ONLY},'ok',''));
+  return devs;
+}
+function b211(){
+  return Array.from({length:10},(_,i)=>mkDev('جهاز '+(i+1),{...EXCEL_ONLY},'warn','بطء في الأداء عند التشغيل'));
+}
+
+const DEFAULT_LABS=[
+  {id:'lab207',num:'207',name:'معمل الحاسب 207',supervisor:'',location:'',pass:'',devPass:'',projector:'ok',projectorNote:'',printer:'ok',printerNote:'',network:'ok',seats:24,notes:'برنامج SPSS يحتاج تفعيل. برنامج R موجود تحت مسمى SPSS for R.',devices:b207()},
+  {id:'lab212',num:'212',name:'معمل الحاسب 212',supervisor:'',location:'',pass:'',devPass:'',projector:'ok',projectorNote:'',printer:'ok',printerNote:'',network:'ok',seats:23,notes:'برنامج SPSS يحتاج تفعيل. برنامج R موجود تحت مسمى SPSS for R.',devices:b212()},
+  {id:'lab213',num:'213',name:'معمل الحاسب 213',supervisor:'',location:'',pass:'',devPass:'',projector:'ok',projectorNote:'',printer:'ok',printerNote:'',network:'ok',seats:31,notes:'',devices:b213()},
+  {id:'lab226',num:'226',name:'معمل الحاسب 226',supervisor:'',location:'',pass:'',devPass:'',projector:'ok',projectorNote:'',printer:'ok',printerNote:'',network:'ok',seats:31,notes:'برنامج SPSS يحتاج تفعيل.',devices:b226()},
+  {id:'lab216',num:'216',name:'معمل الحاسب 216',supervisor:'',location:'',pass:'',devPass:'',projector:'ok',projectorNote:'',printer:'ok',printerNote:'',network:'ok',seats:31,notes:'جميع الأجهزة تحتوي على Excel فقط ولا تحتوي على أي من البرامج الأخرى المطلوبة.',devices:b216()},
+  {id:'lab211',num:'211',name:'معمل الحاسب 211',supervisor:'',location:'',pass:'',devPass:'',projector:'ok',projectorNote:'',printer:'ok',printerNote:'',network:'ok',seats:10,notes:'المعمل يضم عدداً محدوداً من الأجهزة، غير مهيأة للاستخدام بالكفاءة المطلوبة نتيجة بطء الاستجابة وثقل الأداء عند التشغيل.',devices:b211()},
+];
+
+// ══ STATE ══
+let labs=JSON.parse(localStorage.getItem('ujlabs_v6')||'null')||DEFAULT_LABS;
+let activeFilter='all';
+let saving=false;
+function saveLocal(){localStorage.setItem('ujlabs_v6',JSON.stringify(labs));}
+function syncS(){const b=document.getElementById('sbar');b.style.width='0';b.className='sbar go';}
+function syncD(){const b=document.getElementById('sbar');b.className='sbar done';setTimeout(()=>{b.className='sbar';b.style.width='0';},500);}
+function setBadge(c,t){const b=document.getElementById('cbadge');b.className='cbadge '+c;b.querySelector('.cdot').className='cdot'+(c==='loading'?' p':'');document.getElementById('ctext').textContent=t;}
+
+async function loadData(){
+  syncS();setBadge('loading','جارٍ التحميل...');
+  if(!configured){setBadge('offline','محلي');renderAll();syncD();return;}
+  try{
+    const r=await fetch(SUPABASE_URL+'/rest/v1/labs?order=updated_at.asc',{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
+    if(!r.ok)throw 0;
+    const rows=await r.json();
+    if(rows.length)labs=rows.map(r=>r.data);
+    else for(const l of labs)await pushLab(l);
+    setBadge('online','🟢 مشترك');saveLocal();renderAll();syncD();
+  }catch{setBadge('offline','محلي');renderAll();syncD();}
+}
+async function pushLab(lab){
+  if(!configured)return;
+  await fetch(SUPABASE_URL+'/rest/v1/labs?id=eq.'+lab.id,{method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
+  await fetch(SUPABASE_URL+'/rest/v1/labs',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Prefer':'return=representation'},body:JSON.stringify({id:lab.id,data:lab,updated_at:new Date().toISOString()})});
+}
+
+// ══ STATS ══
+function updateStats(){
+  const all=labs.flatMap(l=>l.devices||[]);
+  document.getElementById('st0').textContent=labs.length;
+  document.getElementById('st1').textContent=all.length;
+  document.getElementById('st2').textContent=all.filter(d=>d.status==='ok').length;
+  document.getElementById('st3').textContent=all.filter(d=>d.status!=='ok').length;
+  document.getElementById('st4').textContent=labs.filter(l=>l.printer==='ok').length;
+  document.getElementById('st5').textContent=labs.filter(l=>l.projector==='ok').length;
+}
+
+// ══ RENDER ══
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function si(s){return s==='ok'?'✅':s==='warn'?'⚠️':s==='bad'?'❌':'—';}
+function sc(s){return s==='ok'?'ok':s==='warn'?'warn':s==='bad'?'bad':'';}
+
+function rebuildTabs(){
+  document.getElementById('labTabs').innerHTML=[
+    `<button class="tab ${activeFilter==='all'?'active':''}" onclick="filterLab('all',this)">الكل</button>`,
+    ...labs.map(l=>`<button class="tab ${activeFilter===l.num?'active':''}" onclick="filterLab('${l.num}',this)">معمل ${esc(l.num)}</button>`)
+  ].join('');
+}
+function filterLab(num,btn){activeFilter=num;document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));if(btn)btn.classList.add('active');renderAll();}
+
+function renderAll(){
+  rebuildTabs();
+  const q=(document.getElementById('q').value||'').trim().toLowerCase();
+  let arr=labs;
+  if(activeFilter!=='all')arr=arr.filter(l=>l.num===activeFilter);
+  if(q)arr=arr.filter(l=>(l.name||'').toLowerCase().includes(q)||(l.num||'').includes(q)||(l.devices||[]).some(d=>(d.name||'').toLowerCase().includes(q)));
+  const out=document.getElementById('labsOut');
+  const emp=document.getElementById('emp');
+  if(!arr.length){out.innerHTML='';emp.style.display='block';updateStats();return;}
+  emp.style.display='none';
+
+  out.innerHTML=arr.map((lab,li)=>{
+    const devs=lab.devices||[];
+    const ok=devs.filter(d=>d.status==='ok').length;
+    const issues=devs.filter(d=>d.status!=='ok').length;
+
+    const passVal=isAdmin?(lab.pass||'<span class="gi-value warn">غير محدد</span>'):(lab.pass?'<span class="gi-value">••••</span>':'<span class="gi-value warn">غير محدد</span>');
+    const devPassVal=isAdmin?(lab.devPass||'<span class="gi-value warn">غير محددة</span>'):(lab.devPass?'<span class="gi-value">••••••</span>':'<span class="gi-value warn">غير محددة</span>');
+
+    const giData=[
+      {icon:'🔐',label:'رقم دخول المعمل',val:passVal},
+      {icon:'🖥️',label:'كلمة دخول الأجهزة',val:devPassVal},
+      {icon:'📽️',label:'البروجكتر',val:`<span class="gi-value ${sc(lab.projector)}">${si(lab.projector)} ${SL[lab.projector]||'—'}${lab.projectorNote?' — '+esc(lab.projectorNote):''}</span>`},
+      {icon:'🖨️',label:'الطابعة',val:`<span class="gi-value ${sc(lab.printer)}">${si(lab.printer)} ${SL[lab.printer]||'—'}${lab.printerNote?' — '+esc(lab.printerNote):''}</span>`},
+      {icon:'📶',label:'الإنترنت / الشبكة',val:`<span class="gi-value ${sc(lab.network)}">${si(lab.network)} ${SL[lab.network]||'—'}</span>`},
+      {icon:'🪑',label:'عدد المقاعد',val:`<span class="gi-value">${lab.seats||'—'} مقعد</span>`},
+      {icon:'👤',label:'المسؤول',val:lab.supervisor?`<span class="gi-value">${esc(lab.supervisor)}</span>`:'<span class="gi-value warn">غير محدد</span>'},
+      {icon:'📍',label:'الموقع',val:lab.location?`<span class="gi-value">${esc(lab.location)}</span>`:'<span class="gi-value warn">غير محدد</span>'},
+    ];
+    const giHTML=giData.map(g=>`
+      <div class="gi-item ${isAdmin?'editable':''}" ${isAdmin?`onclick="editLab('${lab.id}')" title="اضغط لتعديل"`:''}> 
+        <div class="gi-icon">${g.icon}</div>
+        <div><div class="gi-label">${g.label}</div>${g.val}${isAdmin?'<div class="gi-hint">✏️ اضغط للتعديل</div>':''}</div>
+      </div>`).join('');
+
+    const devCards=devs.map((d,di)=>{
+      const progList=ALL_PROGS.map(p=>`<span class="dp ${d.progs&&d.progs[p]?'dp-ok':'dp-no'}">${p}</span>`).join('');
+      const numLabel=d.name.replace('جهاز ','').replace('جهاز الأستاذ','أ').replace('جهاز أستاذة المادة','أست');
+      const stLabel={ok:'✅ يعمل',warn:'⚠️ مشكلة',bad:'❌ معطل'};
+      return `
+      <div class="dev-card ${d.status==='bad'?'broken':d.status==='warn'?'issue':''} ${isAdmin?'editable':''}"
+        ${isAdmin?`onclick="openDevEdit('${lab.id}',${di})" title="اضغط لتعديل الجهاز"`:''}> 
+        <div class="dc-top">
+          <div class="dc-num ${DNC[d.status]||'ok'}">${esc(numLabel)}</div>
+          <div class="dc-name">${esc(d.name)}</div>
+          <div class="dc-status ${SC[d.status]||'ds-ok'}">${stLabel[d.status]||'✅ يعمل'}</div>
+        </div>
+        <div class="dc-progs">${progList}</div>
+        ${d.note?`<div class="dc-note">⚠️ ${esc(d.note)}</div>`:''}
+        ${d.serial?`<div class="dc-hint" style="color:var(--muted)">Serial: ${esc(d.serial)}</div>`:''}
+        ${isAdmin?`<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
+          <span class="dc-hint">✏️ اضغط للتعديل</span>
+          <button onclick="event.stopPropagation();deleteDev('${lab.id}',${di})" style="background:#fde8e8;color:#c0392b;border:1.5px solid #f5c0bc;padding:3px 10px;border-radius:6px;font-family:Cairo,sans-serif;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0">🗑️ حذف الجهاز</button>
+        </div>`:''}
+      </div>`;
+    }).join('');
+
+    const adminBar=isAdmin?`<div class="admin-info-bar"><span class="aib-chip">👑 وضع المشرف</span><span>اضغط على أي عنصر لتعديله</span></div>`:'';
+    const adminActions=isAdmin?`<div class="lc-actions"><button class="lc-btn" onclick="editLab('${lab.id}')">✏️ تعديل المعمل</button><button class="lc-btn del" onclick="deleteLab('${lab.id}')">🗑️ حذف</button></div>`:'';
+    const addDevBtn=isAdmin?`<button class="btn-add-dev" onclick="openAddDev('${lab.id}')">➕ جهاز جديد</button>`:'';
+
+    return `
+    <div class="lab-card" style="animation-delay:${li*.06}s">
+      <div class="lc-head">
+        <div class="lc-title">
+          <div class="lc-num">${esc(lab.num)}</div>
+          <div><div class="lc-name">${esc(lab.name||'معمل '+lab.num)}</div><div class="lc-sub">${lab.supervisor?'👤 '+esc(lab.supervisor):''}${lab.location?' 📍 '+esc(lab.location):''}</div></div>
+        </div>
+        <div class="lc-right">
+          <div class="lc-stats">
+            <div class="lcs"><div class="lcs-n">${devs.length}</div><div class="lcs-l">جهاز</div></div>
+            <div class="lcs"><div class="lcs-n" style="color:#6de0a0">${ok}</div><div class="lcs-l">يعمل</div></div>
+            ${issues>0?`<div class="lcs"><div class="lcs-n" style="color:#f08080">${issues}</div><div class="lcs-l">مشكلة</div></div>`:''}
+          </div>
+          ${adminActions}
+        </div>
+      </div>
+      ${adminBar}
+      <div class="gen-info">${giHTML}</div>
+      <div class="dev-section">
+        <div class="dev-sec-hdr">
+          <div class="dev-sec-title">💻 الأجهزة (${devs.length})</div>
+          <div class="dev-controls">
+            <button class="fbtn active" onclick="fDevs('${lab.id}','all',this)">الكل</button>
+            <button class="fbtn" onclick="fDevs('${lab.id}','ok',this)">✅ يعمل</button>
+            <button class="fbtn" onclick="fDevs('${lab.id}','issue',this)">⚠️ مشكلة</button>
+            ${addDevBtn}
+          </div>
+        </div>
+        <div class="dev-grid" id="dg-${lab.id}">${devCards}</div>
+      </div>
+      ${lab.notes?`<div class="lab-notes">💡 <p>${esc(lab.notes)}</p></div>`:''}
+    </div>`;
+  }).join('');
+  updateStats();
+}
+
+function fDevs(labId,filter,btn){
+  btn.closest('.dev-controls').querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const grid=document.getElementById('dg-'+labId);if(!grid)return;
+  const lab=labs.find(l=>l.id===labId);if(!lab)return;
+  grid.querySelectorAll('.dev-card').forEach((card,i)=>{
+    const d=lab.devices[i];if(!d)return;
+    card.style.display=filter==='all'?'':filter==='ok'?(d.status==='ok'?'':'none'):(d.status!=='ok'?'':'none');
+  });
+}
+
+// ══ MODALS ══
+function closeM(id){document.getElementById(id).classList.remove('open');}
+function openM(id){document.getElementById(id).classList.add('open');}
+function requireAdmin(){if(!isAdmin){showToast('🔐 هذه الميزة للمشرف فقط','#c0392b');return false;}return true;}
+function buildProgGrid(cid,selected){
+  document.getElementById(cid).innerHTML=ALL_PROGS.map(p=>`
+    <label class="pchk ${selected&&selected[p]?'on':''}">
+      <input type="checkbox" value="${p}" ${selected&&selected[p]?'checked':''} onchange="this.parentElement.classList.toggle('on',this.checked)">
+      ${p}
+    </label>`).join('');
+}
+function getProgs(cid){const r={};document.querySelectorAll('#'+cid+' input[type=checkbox]').forEach(cb=>{r[cb.value]=cb.checked;});return r;}
+
+function openAddLab(){
+  if(!requireAdmin())return;
+  document.getElementById('eLabId').value='';
+  document.getElementById('labMTitle').textContent='إضافة معمل جديد';
+  ['lNum','lName','lSuper','lLoc','lPass','lDevPass','lProjNote','lPrintNote','lNotes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('lSeats').value='';
+  document.getElementById('lProj').value='ok';
+  document.getElementById('lPrint').value='ok';
+  document.getElementById('lNet').value='ok';
+  openM('labModal');
+}
+function editLab(id){
+  if(!requireAdmin())return;
+  const lab=labs.find(l=>l.id===id);if(!lab)return;
+  document.getElementById('eLabId').value=id;
+  document.getElementById('labMTitle').textContent='تعديل المعمل '+lab.num;
+  document.getElementById('lNum').value=lab.num||'';
+  document.getElementById('lName').value=lab.name||'';
+  document.getElementById('lSuper').value=lab.supervisor||'';
+  document.getElementById('lLoc').value=lab.location||'';
+  document.getElementById('lPass').value=lab.pass||'';
+  document.getElementById('lDevPass').value=lab.devPass||'';
+  document.getElementById('lProj').value=lab.projector||'ok';
+  document.getElementById('lProjNote').value=lab.projectorNote||'';
+  document.getElementById('lPrint').value=lab.printer||'ok';
+  document.getElementById('lPrintNote').value=lab.printerNote||'';
+  document.getElementById('lNet').value=lab.network||'ok';
+  document.getElementById('lSeats').value=lab.seats||'';
+  document.getElementById('lNotes').value=lab.notes||'';
+  openM('labModal');
+}
+async function saveLab(){
+  if(saving)return;
+  const num=document.getElementById('lNum').value.trim();
+  if(!num){showToast('❗ يرجى إدخال رقم المعمل','#c0392b');return;}
+  saving=true;
+  const btn=document.getElementById('saveLabBtn');
+  btn.disabled=true;btn.textContent='⏳ جارٍ الحفظ...';
+  syncS();
+  const existId=document.getElementById('eLabId').value;
+  const id=existId||'lab'+Date.now();
+  const existing=labs.find(l=>l.id===existId)||{};
+  const labData={id,num,
+    name:document.getElementById('lName').value.trim()||'معمل '+num,
+    supervisor:document.getElementById('lSuper').value.trim(),
+    location:document.getElementById('lLoc').value.trim(),
+    pass:document.getElementById('lPass').value.trim(),
+    devPass:document.getElementById('lDevPass').value.trim(),
+    projector:document.getElementById('lProj').value,
+    projectorNote:document.getElementById('lProjNote').value.trim(),
+    printer:document.getElementById('lPrint').value,
+    printerNote:document.getElementById('lPrintNote').value.trim(),
+    network:document.getElementById('lNet').value,
+    seats:parseInt(document.getElementById('lSeats').value)||0,
+    notes:document.getElementById('lNotes').value.trim(),
+    devices:existing.devices||[],
+    updatedAt:Date.now()
+  };
+  if(existId){const idx=labs.findIndex(l=>l.id===existId);if(idx>-1)labs[idx]=labData;else labs.push(labData);}
+  else labs.push(labData);
+  try{await pushLab(labData);showToast('✅ تم الحفظ بنجاح');}
+  catch{showToast('💾 تم الحفظ محلياً');}
+  saveLocal();renderAll();closeM('labModal');syncD();
+  saving=false;btn.disabled=false;btn.innerHTML='💾 حفظ المعمل';
+}
+async function deleteLab(id){
+  if(!requireAdmin())return;
+  if(!confirm('هل أنت متأكد من حذف هذا المعمل نهائياً؟'))return;
+  syncS();labs=labs.filter(l=>l.id!==id);
+  if(configured){try{await fetch(SUPABASE_URL+'/rest/v1/labs?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});}catch{}}
+  saveLocal();renderAll();syncD();showToast('🗑️ تم الحذف','#c0392b');
+}
+
+function openDevEdit(labId,devIdx){
+  if(!requireAdmin())return;
+  const lab=labs.find(l=>l.id===labId);if(!lab)return;
+  const dev=lab.devices[devIdx];if(!dev)return;
+  document.getElementById('eDevLabId').value=labId;
+  document.getElementById('eDevIdx').value=devIdx;
+  document.getElementById('devMTitle').textContent='تعديل: '+dev.name+' — معمل '+lab.num;
+  document.getElementById('dName').value=dev.name||'';
+  document.getElementById('dSerial').value=dev.serial||'';
+  document.getElementById('dNote').value=dev.note||'';
+  document.querySelectorAll('input[name="dstatus"]').forEach(r=>{r.checked=(r.value===(dev.status||'ok'));});
+  buildProgGrid('devProgGrid',dev.progs||{});
+  openM('devModal');
+}
+async function saveDevice(){
+  const labId=document.getElementById('eDevLabId').value;
+  const devIdx=parseInt(document.getElementById('eDevIdx').value);
+  const lab=labs.find(l=>l.id===labId);if(!lab)return;
+  const status=document.querySelector('input[name="dstatus"]:checked')?.value||'ok';
+  lab.devices[devIdx]={...lab.devices[devIdx],
+    name:document.getElementById('dName').value.trim()||lab.devices[devIdx].name,
+    serial:document.getElementById('dSerial').value.trim(),
+    status,note:document.getElementById('dNote').value.trim(),
+    progs:getProgs('devProgGrid')
+  };
+  syncS();
+  try{await pushLab(lab);showToast('✅ تم تعديل الجهاز');}
+  catch{showToast('💾 تم الحفظ محلياً');}
+  saveLocal();closeM('devModal');renderAll();syncD();
+}
+
+function openAddDev(labId){
+  if(!requireAdmin())return;
+  const lab=labs.find(l=>l.id===labId);if(!lab)return;
+  document.getElementById('addDevLabId').value=labId;
+  document.getElementById('addDevTitle').textContent='إضافة جهاز — معمل '+lab.num;
+  document.getElementById('ndName').value='جهاز '+(lab.devices.length+1);
+  document.getElementById('ndSerial').value='';
+  document.getElementById('ndNote').value='';
+  document.querySelectorAll('input[name="ndstatus"]').forEach(r=>{r.checked=(r.value==='ok');});
+  const sampleDev=lab.devices.find(d=>d.status==='ok');
+  buildProgGrid('newDevProgGrid',sampleDev?.progs||{});
+  openM('addDevModal');
+}
+async function saveNewDevice(){
+  const labId=document.getElementById('addDevLabId').value;
+  const lab=labs.find(l=>l.id===labId);if(!lab)return;
+  const name=document.getElementById('ndName').value.trim();
+  if(!name){showToast('❗ أدخل اسم الجهاز','#c0392b');return;}
+  const status=document.querySelector('input[name="ndstatus"]:checked')?.value||'ok';
+  lab.devices.push({id:'d'+Date.now(),name,serial:document.getElementById('ndSerial').value.trim(),status,note:document.getElementById('ndNote').value.trim(),progs:getProgs('newDevProgGrid')});
+  syncS();
+  try{await pushLab(lab);showToast('✅ تمت إضافة الجهاز');}
+  catch{showToast('💾 تم الحفظ محلياً');}
+  saveLocal();closeM('addDevModal');renderAll();syncD();
+}
+
+// ══ PRINT ══
+function openPrintModal(){
+  document.getElementById('printLabList').innerHTML=labs.map(l=>`
+    <label class="pchk on"><input type="checkbox" value="${l.id}" checked> معمل ${esc(l.num)} — ${esc(l.name)}</label>`).join('');
+  openM('printModal');
+}
+function doPrint(){
+  const selected=[...document.querySelectorAll('#printLabList input:checked')].map(c=>c.value);
+  if(!selected.length){showToast('❗ اختر معملاً على الأقل','#c0392b');return;}
+  const inclGeneral=document.getElementById('prGeneral').checked;
+  const inclDevices=document.getElementById('prDevices').checked;
+  const inclProgs=document.getElementById('prProgs').checked;
+  const inclStats=document.getElementById('prStats').checked;
+  const selLabs=labs.filter(l=>selected.includes(l.id));
+  const today=new Date().toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'});
+  const allDevs=selLabs.flatMap(l=>l.devices||[]);
+  const totalOk=allDevs.filter(d=>d.status==='ok').length;
+  const totalWarn=allDevs.filter(d=>d.status==='warn').length;
+  const totalBad=allDevs.filter(d=>d.status==='bad').length;
+  const SLp={ok:'يعمل',warn:'مشكلة',bad:'معطل',none:'غير موجود'};
+  const sip=s=>s==='ok'?'✅':s==='warn'?'⚠️':s==='bad'?'❌':'—';
+  let html=`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>تقرير معامل — جامعة جدة</title>
+  <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;color:#1a2a3a;font-size:13px}.page{max-width:900px;margin:auto;padding:28px}.rep-header{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #0d2137;padding-bottom:14px;margin-bottom:18px}.rep-logo{width:54px;height:54px;background:#0d2137;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:26px;color:white}.rep-logo-area{display:flex;align-items:center;gap:12px}.rep-uni h1{font-size:15px;font-weight:900;color:#0d2137}.rep-uni p{font-size:11px;color:#6b7f95;margin-top:2px}.rep-date{text-align:left;font-size:11px;color:#6b7f95}.rep-date strong{display:block;font-size:13px;color:#0d2137;margin-bottom:2px}.rep-title{background:linear-gradient(135deg,#0d2137,#1560a8);color:white;padding:12px 18px;border-radius:9px;margin-bottom:18px;text-align:center}.rep-title h2{font-size:17px;font-weight:900}.rep-title p{font-size:11px;color:#a0c4e8;margin-top:3px}.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:20px}.stat-box{border:2px solid #d0dce8;border-radius:9px;padding:11px;text-align:center}.stat-box .n{font-size:24px;font-weight:900;line-height:1}.stat-box .l{font-size:11px;color:#6b7f95;margin-top:3px}.stat-box.ok{border-color:#b3dfc8;background:#f0faf5}.stat-box.ok .n{color:#1a7a4a}.stat-box.warn{border-color:#f0d88a;background:#fffbee}.stat-box.warn .n{color:#b07d00}.stat-box.bad{border-color:#f5c0bc;background:#fff5f5}.stat-box.bad .n{color:#c0392b}.lab-section{margin-bottom:24px;page-break-inside:avoid}.lab-title{background:#0d2137;color:white;padding:9px 15px;border-radius:7px 7px 0 0;display:flex;align-items:center;justify-content:space-between}.lab-title h3{font-size:14px;font-weight:900}.lab-title span{font-size:11px;color:#a0c4e8}.gen-table{width:100%;border-collapse:collapse;margin-bottom:12px}.gen-table td{padding:7px 11px;border:1px solid #d0dce8;font-size:12px}.gen-table td:first-child{background:#f3f6fb;font-weight:700;width:35%;color:#0d2137}.dev-table{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:11px}.dev-table th{background:#0d2137;color:white;padding:6px 7px;text-align:right;font-weight:700}.dev-table td{padding:5px 7px;border:1px solid #d0dce8}.dev-table tr:nth-child(even) td{background:#f8fbff}.dev-table tr.warn-row td{background:#fff8f0}.dev-table tr.bad-row td{background:#fff5f5}.badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700}.b-ok{background:#e3f5ec;color:#1a7a4a}.b-warn{background:#fff4e0;color:#b07d00}.b-bad{background:#fde8e8;color:#c0392b}.prog-ok{color:#1a7a4a;font-weight:700}.prog-no{color:#ccc}.notes-box{background:#fffbee;border:1px solid #f0dfa0;border-radius:5px;padding:8px 12px;font-size:11px;color:#7a5800;margin-bottom:10px}.rep-footer{border-top:2px solid #d0dce8;padding-top:10px;margin-top:20px;display:flex;justify-content:space-between;font-size:11px;color:#6b7f95}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.lab-section{page-break-inside:avoid}}</style>
+  </head><body><div class="page">
+  <div class="rep-header"><div class="rep-logo-area"><div class="rep-logo">🔬</div><div class="rep-uni"><h1>جامعة جدة — كلية العلوم</h1><p>قسم الرياضيات والإحصاء</p></div></div><div class="rep-date"><strong>تاريخ التقرير</strong>${today}</div></div>
+  <div class="rep-title"><h2>تقرير معامل قسم الرياضيات والإحصاء</h2><p>يشمل ${selLabs.length} معمل — إجمالي ${allDevs.length} جهاز</p></div>`;
+  if(inclStats)html+=`<div class="stats-grid"><div class="stat-box"><div class="n">${selLabs.length}</div><div class="l">عدد المعامل</div></div><div class="stat-box ok"><div class="n">${totalOk}</div><div class="l">جهاز يعمل ✅</div></div><div class="stat-box warn"><div class="n">${totalWarn}</div><div class="l">جهاز مشكلة ⚠️</div></div><div class="stat-box bad"><div class="n">${totalBad}</div><div class="l">جهاز معطل ❌</div></div></div>`;
+  selLabs.forEach(lab=>{
+    const devs=lab.devices||[];
+    const ok=devs.filter(d=>d.status==='ok').length;
+    const issues=devs.filter(d=>d.status!=='ok').length;
+    html+=`<div class="lab-section"><div class="lab-title"><h3>🔬 معمل ${lab.num} — ${lab.name||'معمل '+lab.num}</h3><span>${devs.length} جهاز | ${ok} يعمل | ${issues} مشكلة</span></div>`;
+    if(inclGeneral)html+=`<table class="gen-table"><tr><td>المسؤول</td><td>${lab.supervisor||'—'}</td></tr><tr><td>الموقع</td><td>${lab.location||'—'}</td></tr><tr><td>عدد المقاعد</td><td>${lab.seats||'—'}</td></tr><tr><td>البروجكتر</td><td>${sip(lab.projector)} ${SLp[lab.projector]||'—'}${lab.projectorNote?' — '+lab.projectorNote:''}</td></tr><tr><td>الطابعة</td><td>${sip(lab.printer)} ${SLp[lab.printer]||'—'}${lab.printerNote?' — '+lab.printerNote:''}</td></tr><tr><td>الإنترنت</td><td>${sip(lab.network)} ${SLp[lab.network]||'—'}</td></tr></table>`;
+    if(lab.notes)html+=`<div class="notes-box">💡 ${lab.notes}</div>`;
+    if(inclDevices){
+      const progCols=inclProgs?ALL_PROGS.map(p=>`<th>${p}</th>`).join(''):'';
+      html+=`<table class="dev-table"><tr><th>#</th><th>الجهاز</th><th>الحالة</th>${progCols}<th>ملاحظة</th></tr>`;
+      devs.forEach((d,i)=>{
+        const rc=d.status==='bad'?'bad-row':d.status==='warn'?'warn-row':'';
+        const sb=d.status==='ok'?'<span class="badge b-ok">✅ يعمل</span>':d.status==='warn'?'<span class="badge b-warn">⚠️ مشكلة</span>':'<span class="badge b-bad">❌ معطل</span>';
+        const pc=inclProgs?ALL_PROGS.map(p=>`<td style="text-align:center">${d.progs&&d.progs[p]?'<span class="prog-ok">✓</span>':'<span class="prog-no">—</span>'}</td>`).join(''):'';
+        html+=`<tr class="${rc}"><td>${i+1}</td><td>${d.name}</td><td>${sb}</td>${pc}<td>${d.note||''}</td></tr>`;
+      });
+      html+=`</table>`;}
+    html+=`</div>`;
+  });
+  html+=`<div class="rep-footer"><span>جامعة جدة — قسم الرياضيات والإحصاء</span><span>تاريخ الإصدار: ${today}</span></div></div><script>window.onload=()=>window.print();<\/script></body></html>`;
+  const win=window.open('','_blank');win.document.write(html);win.document.close();
+  closeM('printModal');
+}
+
+async function deleteDev(labId,devIdx){
+  if(!requireAdmin())return;
+  if(!confirm('هل أنت متأكد من حذف هذا الجهاز؟'))return;
+  const lab=labs.find(l=>l.id===labId);if(!lab)return;
+  lab.devices.splice(devIdx,1);
+  syncS();
+  try{await pushLab(lab);showToast('🗑️ تم حذف الجهاز','#c0392b');}
+  catch{showToast('💾 تم الحفظ محلياً');}
+  saveLocal();renderAll();syncD();
+}
+
+function showToast(msg,bg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.background=bg||'var(--primary)';
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+['labModal','devModal','addDevModal','printModal'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closeM(id);});
+});
+document.getElementById('loginScreen').addEventListener('click',function(e){if(e.target===this)closeLogin();});
+if(sessionStorage.getItem('isAdmin')==='1')isAdmin=true;
+updateAuthUI();
+setInterval(()=>{if(configured&&!saving)loadData();},60000);
+loadData();
+</script>
+</body>
+</html>
